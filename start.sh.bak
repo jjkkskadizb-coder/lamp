@@ -1,3 +1,0 @@
-git add .
-git commit -m "Switch to Docker deployment"
-git push
