@@ -482,7 +482,7 @@ def open_browser():
 
 def main():
     """Start the HTTP server"""
-    with socketserver.TCPServer(("", PORT), CustomHandler) as httpd:
+   with socketserver.TCPServer(("0.0.0.0", PORT), CustomHandler) as httpd:
         print(f"\n{'='*50}")
         print(f"🪔 INDIAN OIL LAMP (DEEPAM) 🪔")
         print(f"{'='*50}")
