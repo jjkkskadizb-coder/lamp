@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-Indian Style Animated Oil Lamp (Diya) - Local Web Server
-Run this script and open http://localhost:8000 in your browser
+Indian Style Animated Oil Lamp (Diya) - Railway Ready
+Run this script on Railway or locally
 """
 
 import http.server
 import socketserver
-import webbrowser
-import threading
-import time
+import os
+import sys
 
-PORT = 8000
+PORT = int(os.environ.get("PORT", 8000))
 
 HTML_CONTENT = """
 <!DOCTYPE html>
@@ -278,7 +277,7 @@ HTML_CONTENT = """
             }
         }
 
-        /* Smoke particles (optional indian touch) */
+        /* Smoke particles */
         .smoke {
             position: absolute;
             width: 4px;
@@ -330,7 +329,7 @@ HTML_CONTENT = """
             backdrop-filter: blur(4px);
         }
 
-        /* Small decorative dots (Indian motif) */
+        /* Decorative dots */
         .dots {
             position: absolute;
             bottom: -25px;
@@ -367,34 +366,21 @@ HTML_CONTENT = """
     </div>
     <div class="container">
         <div class="lamp" id="lamp">
-            <!-- Glow effect -->
             <div class="glow"></div>
-            
-            <!-- Smoke particles (multiple) -->
             <div class="smoke" style="animation-delay: 0s;"></div>
             <div class="smoke" style="animation-delay: 0.8s; left: 48%;"></div>
             <div class="smoke" style="animation-delay: 1.5s; left: 52%;"></div>
-            
-            <!-- Flame -->
             <div class="flame">
                 <div class="flame-inner"></div>
             </div>
-            
-            <!-- Wick -->
             <div class="wick"></div>
-            
-            <!-- Diya body with spout -->
             <div class="diya-body">
                 <div class="spout"></div>
                 <div class="decor"></div>
             </div>
-            
-            <!-- Oil base -->
             <div class="oil-base">
                 <div class="oil-surface"></div>
             </div>
-            
-            <!-- Decorative dots at bottom -->
             <div class="dots">
                 <div class="dot"></div>
                 <div class="dot"></div>
@@ -420,11 +406,9 @@ HTML_CONTENT = """
         const glow = document.querySelector('.glow');
         let intensity = 1;
         
-        // Click to increase brightness and flame size (Indian tradition: light the lamp)
         lamp.addEventListener('click', () => {
             intensity = Math.min(intensity + 0.2, 2.2);
             updateFlame();
-            // reset after 3 seconds back to normal slowly
             setTimeout(() => {
                 if(intensity > 1) {
                     intensity = Math.max(1, intensity - 0.15);
@@ -443,7 +427,6 @@ HTML_CONTENT = """
             glow.style.opacity = 0.5 + intensity * 0.2;
         }
         
-        // Additional random subtle flame flicker variations via js (enhance)
         setInterval(() => {
             if(Math.random() > 0.7) {
                 const randScale = 0.98 + Math.random() * 0.07;
@@ -455,7 +438,6 @@ HTML_CONTENT = """
             }
         }, 120);
         
-        // Add floating diya sound effect metaphor (console only, but adds charm)
         console.log("%c✨ Shubh Deepavali! The lamp of knowledge burns bright ✨", "color: #ffaa33; font-size: 16px; font-style: italic;");
     </script>
 </body>
@@ -474,30 +456,32 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
             self.wfile.write(b'404 - Page Not Found')
-
-def open_browser():
-    """Open browser after a short delay"""
-    time.sleep(1.5)
-    webbrowser.open(f'http://localhost:{PORT}')
+    
+    def log_message(self, format, *args):
+        # Custom logging to make Railway logs cleaner
+        print(f"[ACCESS] {args[0]} - {args[1]} {args[2]}")
 
 def main():
-    """Start the HTTP server"""
-   with socketserver.TCPServer(("0.0.0.0", PORT), CustomHandler) as httpd:
-        print(f"\n{'='*50}")
-        print(f"🪔 INDIAN OIL LAMP (DEEPAM) 🪔")
-        print(f"{'='*50}")
-        print(f"✨ Server running at: http://localhost:{PORT}")
-        print(f"✨ Press Ctrl+C to stop the server")
-        print(f"✨ Click on the lamp to make the flame brighter!")
-        print(f"{'='*50}\n")
-        
-        # Open browser automatically
-        threading.Thread(target=open_browser, daemon=True).start()
-        
-        try:
+    """Start the HTTP server bound to all interfaces"""
+    try:
+        # Bind to 0.0.0.0 to accept connections from anywhere (required for Railway)
+        with socketserver.TCPServer(("0.0.0.0", PORT), CustomHandler) as httpd:
+            print(f"\n{'='*50}")
+            print(f"🪔 INDIAN OIL LAMP (DEEPAM) 🪔")
+            print(f"{'='*50}")
+            print(f"✨ Server running on http://0.0.0.0:{PORT}")
+            print(f"✨ Ready to accept connections")
+            print(f"✨ Click on the lamp to make the flame brighter!")
+            print(f"{'='*50}\n")
+            print(f"Press Ctrl+C to stop the server\n")
+            
             httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\n\n🪔 Server stopped. The light within continues to shine! 🪔\n")
+    except KeyboardInterrupt:
+        print("\n\n🪔 Server stopped. The light within continues to shine! 🪔\n")
+        sys.exit(0)
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
